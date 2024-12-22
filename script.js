@@ -1,4 +1,7 @@
-// Script that adds a dropdown with alert options
+// UserScript for Indicwiki Transliteration
+
+// By installing this User Script, you agree to the terms of use of the API service for Transliteration, deployed on Toolforge.
+// Only the "page content" is sent to the API service for transliteration.
 // Documentation: [[User:Agamyasamuel/Indicwiki-Transliterate.js]]
 // Source: [[User:Agamyasamuel/Indicwiki-Transliterate.js]]
 // License: MIT License
@@ -181,7 +184,30 @@
                     }
 
                     const wikitext = wikiData.parse.wikitext;
-                    console.log("wikitext =>", wikitext)
+
+                    // Transliterate the page title
+                    const titleResponse = await fetch(`http://127.0.0.1:8000${option.route}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: pageTitle })
+                    });
+
+
+                    if (!titleResponse.ok) {
+                        throw new Error('Title transliteration failed');
+                    }
+
+                    const titleResult = await titleResponse.json();
+                    console.log("Title Result:", titleResult.result);
+
+                    // Update the page title
+                    const pageTitleElement = document.querySelector('.mw-page-title-main');
+                    if (pageTitleElement) {
+                        pageTitleElement.textContent = titleResult.result || 'Unknown';
+                    }
+
                     // Send the wikitext to transliteration API
                     const translitResponse = await fetch(`http://127.0.0.1:8000${option.route}`, {
                         method: 'POST',
